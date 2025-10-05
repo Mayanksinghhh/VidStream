@@ -118,14 +118,22 @@ function ChartTooltipContent({
   color,
   nameKey,
   labelKey,
-}: React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
-  React.ComponentProps<'div'> & {
-    hideLabel?: boolean
-    hideIndicator?: boolean
-    indicator?: 'line' | 'dot' | 'dashed'
-    nameKey?: string
-    labelKey?: string
-  }) {
+}: React.ComponentProps<'div'> & {
+  active?: boolean
+  payload?: any[]
+  label?: any
+  hideLabel?: boolean
+  hideIndicator?: boolean
+  indicator?: 'line' | 'dot' | 'dashed'
+  nameKey?: string
+  labelKey?: string
+  labelFormatter?: (label: any, payload?: any[]) => React.ReactNode
+  formatter?: (...args: any[]) => React.ReactNode
+  color?: string
+  className?: string
+  labelClassName?: string
+}) {
+
   const { config } = useChart()
 
   const tooltipLabel = React.useMemo(() => {
@@ -253,17 +261,19 @@ const ChartLegend = RechartsPrimitive.Legend
 function ChartLegendContent({
   className,
   hideIcon = false,
-  payload,
+  payload = [],
   verticalAlign = 'bottom',
   nameKey,
-}: React.ComponentProps<'div'> &
-  Pick<RechartsPrimitive.LegendProps, 'payload' | 'verticalAlign'> & {
-    hideIcon?: boolean
-    nameKey?: string
-  }) {
+}: {
+  className?: string
+  hideIcon?: boolean
+  payload?: any[]
+  verticalAlign?: 'top' | 'bottom' | 'middle'
+  nameKey?: string
+}) {
   const { config } = useChart()
 
-  if (!payload?.length) {
+  if (!payload.length) {
     return null
   }
 
@@ -282,27 +292,24 @@ function ChartLegendContent({
         return (
           <div
             key={item.value}
-            className={
-              '[&>svg]:text-muted-foreground flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3'
-            }
+            className="flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground"
           >
             {itemConfig?.icon && !hideIcon ? (
               <itemConfig.icon />
             ) : (
               <div
                 className="h-2 w-2 shrink-0 rounded-[2px]"
-                style={{
-                  backgroundColor: item.color,
-                }}
+                style={{ backgroundColor: item.color }}
               />
             )}
-            {itemConfig?.label}
+            {itemConfig?.label || item.value}
           </div>
         )
       })}
     </div>
   )
 }
+
 
 // Helper to extract item config from a payload.
 function getPayloadConfigFromPayload(

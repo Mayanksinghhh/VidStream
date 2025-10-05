@@ -83,7 +83,7 @@ useEffect(() => {
       ? { email: formData.email, password: formData.password }
       : { username: formData.username, email: formData.email, password: formData.password };
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}${endpoint}`, {
+    const response = await fetch(`${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),

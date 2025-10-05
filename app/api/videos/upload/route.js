@@ -4,7 +4,10 @@ import Video from "@/models/Video"
 import { verifyTokenFromHeader } from "@/lib/auth"
 import cloudinary from "@/lib/cloudinary"
 
-export const config = { api: { bodyParser: false } }
+export const dynamic = "force-dynamic"
+export const runtime = "nodejs"
+export const preferredRegion = "auto"
+export const maxDuration = 60
 
 export async function POST(req) {
   try {
@@ -20,17 +23,11 @@ export async function POST(req) {
     const description = (isForm ? formData.get("description") : null) || ""
     const categories =
       isForm && formData.get("categories")
-        ? formData
-            .get("categories")
-            .split(",")
-            .map((c) => c.trim())
+        ? formData.get("categories").split(",").map((c) => c.trim())
         : []
     const tags =
       isForm && formData.get("tags")
-        ? formData
-            .get("tags")
-            .split(",")
-            .map((t) => t.trim())
+        ? formData.get("tags").split(",").map((t) => t.trim())
         : []
 
     const publicId = isForm ? formData.get("publicId") || formData.get("public_id") : null
@@ -38,10 +35,7 @@ export async function POST(req) {
     const thumbUrl = isForm ? formData.get("thumbnail_url") || null : null
     const durationField = isForm ? formData.get("duration") || null : null
 
-    let videoUrl,
-      thumbnailUrl,
-      cloudPublicId,
-      duration = 0
+    let videoUrl, thumbnailUrl, cloudPublicId, duration = 0
 
     if (publicId && (secureUrl || thumbUrl)) {
       cloudPublicId = String(publicId)
@@ -49,7 +43,7 @@ export async function POST(req) {
       thumbnailUrl = String(thumbUrl || secureUrl || "")
       duration = durationField ? Math.round(Number(durationField)) : 0
     } else {
-      // Original flow: upload stream server-side
+      // Upload file server-side
       const file = formData?.get("file")
       if (!file) return NextResponse.json({ error: "No file" }, { status: 400 })
 
@@ -61,7 +55,10 @@ export async function POST(req) {
           {
             resource_type: "video",
             folder: "video_app",
-            eager: [{ width: 480, height: 270, crop: "fill", quality: "auto" }, { streaming_profile: "hd" }],
+            eager: [
+              { width: 480, height: 270, crop: "fill", quality: "auto" },
+              { streaming_profile: "hd" },
+            ],
           },
           (err, result) => {
             if (err) return reject(err)
